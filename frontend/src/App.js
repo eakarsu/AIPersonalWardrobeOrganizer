@@ -11,6 +11,7 @@ import PackingListPage from './pages/PackingListPage';
 import AIPage from './pages/AIPage';
 import AIInsightsPage from './pages/AIInsightsPage';
 import WardrobeAIAdvancedPage from './pages/WardrobeAIAdvancedPage';
+import CustomViewsPage from './pages/CustomViewsPage';
 import './App.css';
 
 // // === Batch 06 Gaps & Frontend Mounts ===
@@ -97,6 +98,7 @@ function App() {
           <Route path="/ai" element={<AIPage />} />
           <Route path="/ai-insights" element={<AIInsightsPage />} />
           <Route path="/ai-advanced" element={<WardrobeAIAdvancedPage />} />
+          <Route path="/custom-views" element={<CustomViewsPage />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Layout>

@@ -90,6 +90,12 @@ app.use('/api/gap-no-webhooks', require('./routes/gapFeat_no_webhooks'));
 app.use('/api/gap-no-mobile-app', require('./routes/gapFeat_no_mobile_app'));
 app.use('/api/gap-only-8-frontend-pages', require('./routes/gapFeat_only_8_frontend_pages'));
 
+// === Custom Views (must be mounted BEFORE the 404 handler) ===
+app.use('/api/custom-views', require('./routes/customViews'));
+
+// 404 fallback
+app.use((req, res) => res.status(404).json({ error: 'Not found', path: req.originalUrl }));
+
 app.listen(PORT, () => console.log(`Wardrobe backend running on port ${PORT}`));
   } catch (err) {
     console.error('Failed to start:', err);

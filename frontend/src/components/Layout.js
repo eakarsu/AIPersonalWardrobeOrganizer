@@ -45,6 +45,11 @@ function Layout({ user, onLogout, children }) {
           <NavLink to="/ai-advanced" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             🔮 AI Insights+
           </NavLink>
+
+          <div className="sidebar-section">Custom</div>
+          <NavLink to="/custom-views" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            📈 Wardrobe Views
+          </NavLink>
         </nav>
 
         <div className="sidebar-footer">
