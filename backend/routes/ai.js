@@ -9,7 +9,7 @@ const auth = require('../middleware/auth');
 const router = express.Router();
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const AI_MODEL = 'anthropic/claude-3-5-sonnet-20241022';
+const AI_MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-3-5-sonnet-20241022';
 
 // Multer setup
 const uploadsDir = path.join(__dirname, '../uploads');
