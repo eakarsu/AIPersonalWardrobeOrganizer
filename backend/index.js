@@ -9,7 +9,7 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
-const { pool, initSchema } = require('./schema');
+const { pool, verifySchema } = require('./schema');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -28,9 +28,10 @@ app.use('/api/packing-lists', require('./routes/packing-lists'));
 app.use('/api/ai', require('./routes/ai'));
 // Apply pass 5 — backlog extensions (fit, sharing, shopping, weather, orchestration, audit, capsules, rotation)
 app.use('/api/wardrobe-ext', require('./routes/extensions'));
+const auth = require('./middleware/auth');
+app.use('/api/wardrobe-workflows', auth, require('./routes/wardrobeWorkflow'));
 
 // Stats endpoint
-const auth = require('./middleware/auth');
 app.get('/api/stats', auth, async (req, res) => {
   try {
     const [itemsResult, outfitsResult, logsResult, cpwResult] = await Promise.all([
@@ -63,14 +64,10 @@ async function start() {
   try {
     await pool.query('SELECT 1');
     console.log('Database connected');
-    // Add reset_token columns if not exist (migration)
-    await pool.query(`
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP;
-    `).catch(() => {});
-    await initSchema();
-    
+    await verifySchema();
+
 // === Custom Feature Mounts (batch_06) ===
+app.use(/^\/api\/(?:cf-|gap-)/, auth, (req, res) => res.status(503).json({ error: 'Generated feature route is quarantined pending validated implementation' }));
 app.use('/api/cf-outfit-orchestration-agent', require('./routes/customFeat01_OutfitOrchestrationAgent'));
 app.use('/api/cf-computer-vision-closet-audit', require('./routes/customFeat02_ComputerVisionClosetAudit'));
 app.use('/api/cf-shopping-synergy', require('./routes/customFeat03_ShoppingSynergy'));

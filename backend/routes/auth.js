@@ -1,10 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 const { pool } = require('../schema');
 const auth = require('../middleware/auth');
 const router = express.Router();
+const { jwtSecret } = require('../config/security');
+const JWT_SECRET = jwtSecret();
 
 // Register
 router.post('/register', async (req, res) => {
@@ -15,11 +16,11 @@ router.post('/register', async (req, res) => {
     if (existing.rows.length > 0) return res.status(400).json({ error: 'Email already registered' });
     const password_hash = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      'INSERT INTO users (email, password_hash, name) VALUES ($1, $2, $3) RETURNING id, email, name, created_at',
+      "INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, 'owner') RETURNING id, email, name, role, created_at",
       [email, password_hash, name]
     );
     const user = result.rows[0];
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ user, token });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -34,7 +35,7 @@ router.post('/login', async (req, res) => {
     const user = result.rows[0];
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return res.status(400).json({ error: 'Invalid credentials' });
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role || 'owner' }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ user: { id: user.id, email: user.email, name: user.name }, token });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -50,16 +51,7 @@ router.get('/me', auth, async (req, res) => {
 
 // Forgot password
 router.post('/forgot-password', async (req, res) => {
-  try {
-    const { email } = req.body;
-    const result = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (result.rows.length === 0) return res.json({ message: 'If that email exists, a reset link has been sent' });
-    const token = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 3600000); // 1 hour
-    await pool.query('UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE email = $3', [token, expires, email]);
-    // In production, send email. For now, return token.
-    res.json({ message: 'Reset token generated', resetToken: token });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  res.status(503).json({ error: 'Password reset delivery is unavailable until an approved provider is configured' });
 });
 
 // Reset password
