@@ -35,6 +35,15 @@ function Login({ onLogin }) {
             <label>Password</label>
             <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="Your password" required />
           </div>
+          <button
+            type="button"
+            onClick={() => { setForm((current) => ({ ...current, email: process.env.REACT_APP_DEMO_EMAIL || '', password: process.env.REACT_APP_DEMO_PASSWORD || '' })); }}
+            disabled={!process.env.REACT_APP_DEMO_EMAIL || !process.env.REACT_APP_DEMO_PASSWORD}
+            aria-label="Auto Fill Demo Credentials"
+            style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
+          >
+            Auto Fill Demo Credentials
+          </button>
           <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
