@@ -18,7 +18,7 @@ if (( ${#JWT_SECRET} < 32 )); then
   echo 'JWT_SECRET must contain at least 32 characters.' >&2
   exit 1
 fi
-BACKEND_PORT=${PORT:-3001}
+BACKEND_PORT=${BACKEND_PORT:-${SERVER_PORT:-${PORT:-3001}}}
 FRONTEND_PORT=${FRONTEND_PORT:-3000}
 export PORT="$BACKEND_PORT"
 
@@ -52,9 +52,9 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-(cd backend && npm run dev) &
+(cd backend && exec node index.js) &
 BACKEND_PID=$!
-(cd frontend && BROWSER=none PORT="$FRONTEND_PORT" npm start) &
+(cd frontend && exec env BROWSER=none PORT="$FRONTEND_PORT" ./node_modules/.bin/react-scripts start) &
 FRONTEND_PID=$!
 
 while kill -0 "$BACKEND_PID" 2>/dev/null && kill -0 "$FRONTEND_PID" 2>/dev/null; do

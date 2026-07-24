@@ -9,7 +9,7 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
-const { pool, verifySchema } = require('./schema');
+const { pool, verifySchema, bootstrapRuntime } = require('./schema');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -64,6 +64,7 @@ async function start() {
   try {
     await pool.query('SELECT 1');
     console.log('Database connected');
+    await bootstrapRuntime();
     await verifySchema();
 
 // === Custom Feature Mounts (batch_06) ===

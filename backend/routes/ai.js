@@ -3,12 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 const fetch = require('node-fetch');
 const { pool } = require('../schema');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_URL = `${(process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').replace(/\/+$/, '')}/chat/completions`;
 const AI_MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-3-5-sonnet-20241022';
 
 // Multer setup
@@ -24,7 +25,7 @@ const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 const aiRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 20,
-  keyGenerator: (req) => req.user ? `user:${req.user.id}` : req.ip,
+  keyGenerator: (req) => req.user ? `user:${req.user.id}` : ipKeyGenerator(req.ip),
   message: { error: 'AI rate limit exceeded. Max 20 requests per hour.' }
 });
 
@@ -42,8 +43,10 @@ async function callOpenRouter(messages, maxTokens = 1500) {
     body: JSON.stringify({ model: AI_MODEL, messages, max_tokens: maxTokens, temperature: 0.7 })
   });
   const data = await response.json();
-  if (data.error) throw new Error(data.error.message || 'AI service error');
-  return data.choices?.[0]?.message?.content || '';
+  if (!response.ok || data.error) throw new Error(data.error?.message || `AI service error (${response.status})`);
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('AI service returned no content');
+  return content;
 }
 
 function parseJSON(text) {
