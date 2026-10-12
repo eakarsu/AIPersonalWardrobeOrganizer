@@ -1,0 +1,302 @@
+[
+  {
+    "name": "CFComputerVisionClosetAuditPage",
+    "id": "cf-computer-vision-closet-audit",
+    "title": "Computer vision closet audit",
+    "description": "Prepare a professional advisory report for computer vision closet audit using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run Computer vision closet audit for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this Computer vision closet audit data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for Computer vision closet audit.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "CFOutfitOrchestrationAgentPage",
+    "id": "cf-outfit-orchestration-agent",
+    "title": "Outfit orchestration agent",
+    "description": "Prepare a professional advisory report for outfit orchestration agent using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run Outfit orchestration agent for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this Outfit orchestration agent data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for Outfit orchestration agent.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "CFSeasonalRotationAutomationPage",
+    "id": "cf-seasonal-rotation-automation",
+    "title": "Seasonal rotation automation",
+    "description": "Prepare a professional advisory report for seasonal rotation automation using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run Seasonal rotation automation for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this Seasonal rotation automation data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for Seasonal rotation automation.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "CFShoppingSynergyPage",
+    "id": "cf-shopping-synergy",
+    "title": "Shopping synergy",
+    "description": "Prepare a professional advisory report for shopping synergy using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run Shopping synergy for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this Shopping synergy data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for Shopping synergy.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "CFTravelCapsuleBuilderPage",
+    "id": "cf-travel-capsule-builder",
+    "title": "Travel capsule builder",
+    "description": "Prepare a professional advisory report for travel capsule builder using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run Travel capsule builder for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this Travel capsule builder data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for Travel capsule builder.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "GapLimitedNotificationsLayer1MentionPage",
+    "id": "gap-limited-notifications-layer-1-mention",
+    "title": "Limited notifications layer (1 mention)",
+    "description": "Prepare a professional advisory report for limited notifications layer (1 mention) using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run Limited notifications layer (1 mention) for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this Limited notifications layer (1 mention) data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for Limited notifications layer (1 mention).\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "GapLimitedTravelFeaturesOnlyPackingListsPage",
+    "id": "gap-limited-travel-features-only-packing-lists",
+    "title": "Limited travel features (only packing lists)",
+    "description": "Prepare a professional advisory report for limited travel features (only packing lists) using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run Limited travel features (only packing lists) for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this Limited travel features (only packing lists) data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for Limited travel features (only packing lists).\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "GapNoMobileAppPage",
+    "id": "gap-no-mobile-app",
+    "title": "No mobile app",
+    "description": "Prepare a professional advisory report for no mobile app using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run No mobile app for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this No mobile app data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for No mobile app.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "GapNoShoppingIntegrationPage",
+    "id": "gap-no-shopping-integration",
+    "title": "No shopping integration",
+    "description": "Prepare a professional advisory report for no shopping integration using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run No shopping integration for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this No shopping integration data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for No shopping integration.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "GapNoSizeFitTrackingForNewPurchaseRecommendatiPage",
+    "id": "gap-no-size-fit-tracking-for-new-purchase-recommendati",
+    "title": "No size/fit tracking (for new purchase recommendations)",
+    "description": "Prepare a professional advisory report for no size/fit tracking (for new purchase recommendations) using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run No size/fit tracking (for new purchase recommendations) for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this No size/fit tracking (for new purchase recommendations) data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for No size/fit tracking (for new purchase recommendations).\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "GapNoSocialSharingOutfitInspirationPage",
+    "id": "gap-no-social-sharing-outfit-inspiration",
+    "title": "No social sharing (outfit inspiration)",
+    "description": "Prepare a professional advisory report for no social sharing (outfit inspiration) using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run No social sharing (outfit inspiration) for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this No social sharing (outfit inspiration) data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for No social sharing (outfit inspiration).\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "GapNoWebhooksPage",
+    "id": "gap-no-webhooks",
+    "title": "No webhooks",
+    "description": "Prepare a professional advisory report for no webhooks using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run No webhooks for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this No webhooks data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for No webhooks.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "GapOnly8FrontendPagesPage",
+    "id": "gap-only-8-frontend-pages",
+    "title": "Only 8 frontend pages",
+    "description": "Prepare a professional advisory report for only 8 frontend pages using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run Only 8 frontend pages for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this Only 8 frontend pages data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for Only 8 frontend pages.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "GapPackingPage",
+    "id": "gap-packing",
+    "title": "Packing",
+    "description": "Prepare a professional advisory report for packing using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run Packing for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this Packing data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for Packing.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  },
+  {
+    "name": "GapWearPage",
+    "id": "gap-wear",
+    "title": "Wear",
+    "description": "Prepare a professional advisory report for wear using the brief and evidence you provide. Review the findings, assumptions, and action plan before applying changes.",
+    "samples": [
+      {
+        "label": "Scenario",
+        "value": "Run Wear for a realistic customer case.\nContext: A mid-market operations team is under deadline pressure and needs an actionable recommendation.\nGoal: identify the best next steps, risks, assumptions, and expected business impact.\nOutput format: concise summary, prioritized actions, confidence level, and follow-up questions."
+      },
+      {
+        "label": "Data sample",
+        "value": "Analyze this Wear data sample.\nRecords:\n- Item A: high priority, owner unassigned, due this week, customer impact high\n- Item B: medium priority, owner assigned, blocked by missing information\n- Item C: low priority, recurring pattern, possible automation candidate\nReturn structured findings, anomalies, recommendations, and a short implementation plan."
+      },
+      {
+        "label": "Executive review",
+        "value": "Prepare an executive review for Wear.\nAudience: business owner and operations manager.\nInclude: what happened, why it matters, financial or operational impact, risks, and three decisions needed today.\nTone: professional, direct, and implementation-focused."
+      }
+    ]
+  }
+]

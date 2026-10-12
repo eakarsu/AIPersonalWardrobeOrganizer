@@ -56,13 +56,13 @@ export const updatePackingList = (id, data) => api.put(`/packing-lists/${id}`, d
 export const deletePackingList = (id) => api.delete(`/packing-lists/${id}`);
 
 // AI
-export const aiAutoTagPhoto = (formData) => api.post('/ai/auto-tag-photo', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-export const aiOutfitSuggest = (data) => api.post('/ai/outfit-suggest', data);
-export const aiPackingList = (data) => api.post('/ai/packing-list', data);
-export const aiDeclutter = () => api.post('/ai/declutter-suggestions', {});
-export const aiCostPerWear = () => api.post('/ai/cost-per-wear', {});
-export const aiSeasonalAnalysis = (data) => api.post('/ai/seasonal-analysis', data);
-export const aiStyleProfile = (data) => api.post('/ai/style-profile', data);
+export const aiAutoTagPhoto = (formData, options = {}) => api.post('/ai/auto-tag-photo', formData, { ...({ headers: { 'Content-Type': 'multipart/form-data' } }), ...options });
+export const aiOutfitSuggest = (data, options = {}) => api.post('/ai/outfit-suggest', data, options);
+export const aiPackingList = (data, options = {}) => api.post('/ai/packing-list', data, options);
+export const aiDeclutter = (options = {}) => api.post('/ai/declutter-suggestions', {}, options);
+export const aiCostPerWear = (options = {}) => api.post('/ai/cost-per-wear', {}, options);
+export const aiSeasonalAnalysis = (data, options = {}) => api.post('/ai/seasonal-analysis', data, options);
+export const aiStyleProfile = (data, options = {}) => api.post('/ai/style-profile', data, options);
 export const getAIHistory = (params) => api.get('/ai/history', { params });
 
 // Stats

@@ -7,6 +7,7 @@ const { ipKeyGenerator } = require('express-rate-limit');
 const fetch = require('node-fetch');
 const { pool } = require('../schema');
 const auth = require('../middleware/auth');
+const { createNativeAIRequest } = require('../services/nativeAIRequest');
 const router = express.Router();
 
 const OPENROUTER_URL = `${(process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').replace(/\/+$/, '')}/chat/completions`;
@@ -31,8 +32,10 @@ const aiRateLimiter = rateLimit({
 
 router.use(auth);
 
-async function callOpenRouter(messages, maxTokens = 1500) {
+async function callOpenRouter(messages, maxTokens = 1500, aiRequest) {
+  aiRequest.assertActive();
   const response = await fetch(OPENROUTER_URL, {
+    signal: aiRequest.signal,
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
@@ -43,9 +46,14 @@ async function callOpenRouter(messages, maxTokens = 1500) {
     body: JSON.stringify({ model: AI_MODEL, messages, max_tokens: maxTokens, temperature: 0.7 })
   });
   const data = await response.json();
-  if (!response.ok || data.error) throw new Error(data.error?.message || `AI service error (${response.status})`);
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error('AI service returned no content');
+  aiRequest.assertActive();
+  if (!response.ok || data.error) {
+    const message = String(data.error?.message || `AI service error (${response.status})`);
+    throw new Error(process.env.OPENROUTER_API_KEY ? message.replaceAll(process.env.OPENROUTER_API_KEY, '[redacted]') : message);
+  }
+  const choice = data.choices?.[0];
+  const content = choice?.message?.content;
+  if (choice?.message?.refusal || ['length', 'content_filter'].includes(choice?.finish_reason) || typeof content !== 'string' || !content.trim()) throw new Error('OpenRouter did not return a complete response. Please try again.');
   return content;
 }
 
@@ -56,17 +64,18 @@ function parseJSON(text) {
   } catch (e) { return null; }
 }
 
-async function saveAnalysis(userId, endpoint, itemId, result) {
+async function saveAnalysis(userId, endpoint, itemId, result, aiRequest) {
   try {
-    await pool.query(
+    await aiRequest.query(
       'INSERT INTO ai_analyses (user_id, endpoint, item_id, result) VALUES ($1,$2,$3,$4)',
       [userId, endpoint, itemId || null, JSON.stringify(result)]
     );
-  } catch (e) { /* non-fatal */ }
+  } catch (e) { if (aiRequest.signal.aborted) throw e;  /* non-fatal */ }
 }
 
 // POST /api/ai/auto-tag-photo — multer upload, base64 encode, vision AI
 router.post('/auto-tag-photo', aiRateLimiter, upload.single('photo'), async (req, res) => {
+  const aiRequest = createNativeAIRequest(req, res, pool);
   try {
     if (!req.file) return res.status(400).json({ error: 'No photo uploaded' });
     const imageBuffer = fs.readFileSync(req.file.path);
@@ -79,19 +88,25 @@ router.post('/auto-tag-photo', aiRateLimiter, upload.single('photo'), async (req
         { type: 'image_url', image_url: { url: `data:${mimeType};base64,${b64}` } },
         { type: 'text', text: 'Analyze this clothing item. Return JSON: {category, color, material, pattern, season: [], formality, brand_visible, condition, suggested_tags: []}' }
       ]
-    }]);
+    }], 1500, aiRequest);
 
     const parsed = parseJSON(content) || {};
-    await saveAnalysis(req.user.id, 'auto-tag-photo', null, parsed);
+    await saveAnalysis(req.user.id, 'auto-tag-photo', null, parsed, aiRequest);
+    await aiRequest.commit();
     res.json({ content, parsed, imageUrl: `/uploads/${req.file.filename}` });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    await aiRequest.rollback();
+    if (aiRequest.disconnected) return;
+    if (aiRequest.timedOut) return res.status(504).json({ error: 'AI request timed out. Please try again.' });
+    res.status(500).json({ error: err.message }); } finally { await aiRequest.dispose(); }
 });
 
 // POST /api/ai/outfit-suggest
 router.post('/outfit-suggest', aiRateLimiter, async (req, res) => {
+  const aiRequest = createNativeAIRequest(req, res, pool);
   try {
     const { occasion, weather, mood } = req.body;
-    const itemsResult = await pool.query(
+    const itemsResult = await aiRequest.query(
       'SELECT id, name, category, color, material, formality, season, wear_count FROM wardrobe_items WHERE user_id = $1 AND is_donated = FALSE LIMIT 100',
       [req.user.id]
     );
@@ -108,18 +123,24 @@ ${wardrobe.map(i => `ID:${i.id} Name:${i.name} Category:${i.category} Color:${i.
 
 Return JSON: {outfit: [{item_id, reason}], style_notes, color_harmony_score}`;
 
-    const content = await callOpenRouter([{ role: 'user', content: prompt }]);
+    const content = await callOpenRouter([{ role: 'user', content: prompt }], 1500, aiRequest);
     const parsed = parseJSON(content) || {};
-    await saveAnalysis(req.user.id, 'outfit-suggest', null, parsed);
+    await saveAnalysis(req.user.id, 'outfit-suggest', null, parsed, aiRequest);
+    await aiRequest.commit();
     res.json({ content, parsed });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    await aiRequest.rollback();
+    if (aiRequest.disconnected) return;
+    if (aiRequest.timedOut) return res.status(504).json({ error: 'AI request timed out. Please try again.' });
+    res.status(500).json({ error: err.message }); } finally { await aiRequest.dispose(); }
 });
 
 // POST /api/ai/packing-list
 router.post('/packing-list', aiRateLimiter, async (req, res) => {
+  const aiRequest = createNativeAIRequest(req, res, pool);
   try {
     const { destination, dates, occasions, weather_forecast } = req.body;
-    const itemsResult = await pool.query(
+    const itemsResult = await aiRequest.query(
       'SELECT id, name, category, color, formality, season FROM wardrobe_items WHERE user_id = $1 AND is_donated = FALSE LIMIT 100',
       [req.user.id]
     );
@@ -137,27 +158,33 @@ ${wardrobe.map(i => `ID:${i.id} Name:${i.name} Category:${i.category} Color:${i.
 
 Return JSON: {essential_items: [item_ids], optional_items: [item_ids], gaps: [{item_type, reason}], total_outfits_possible}`;
 
-    const content = await callOpenRouter([{ role: 'user', content: prompt }]);
+    const content = await callOpenRouter([{ role: 'user', content: prompt }], 1500, aiRequest);
     const parsed = parseJSON(content) || {};
 
     // Save packing list
-    const saved = await pool.query(
+    const saved = await aiRequest.query(
       'INSERT INTO packing_lists (user_id, destination, travel_dates, occasion_types, ai_suggestions) VALUES ($1,$2,$3,$4,$5) RETURNING *',
       [req.user.id, destination, JSON.stringify({ dates }), occasions || [], JSON.stringify(parsed)]
     );
-    await saveAnalysis(req.user.id, 'packing-list', null, parsed);
+    await saveAnalysis(req.user.id, 'packing-list', null, parsed, aiRequest);
+    await aiRequest.commit();
     res.json({ content, parsed, packingListId: saved.rows[0].id });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    await aiRequest.rollback();
+    if (aiRequest.disconnected) return;
+    if (aiRequest.timedOut) return res.status(504).json({ error: 'AI request timed out. Please try again.' });
+    res.status(500).json({ error: err.message }); } finally { await aiRequest.dispose(); }
 });
 
 // POST /api/ai/declutter-suggestions
 router.post('/declutter-suggestions', aiRateLimiter, async (req, res) => {
+  const aiRequest = createNativeAIRequest(req, res, pool);
   try {
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     const dateStr = ninetyDaysAgo.toISOString().split('T')[0];
 
-    const itemsResult = await pool.query(
+    const itemsResult = await aiRequest.query(
       `SELECT id, name, category, brand, purchase_price, wear_count, last_worn, condition, created_at
        FROM wardrobe_items
        WHERE user_id = $1 AND is_donated = FALSE
@@ -169,7 +196,8 @@ router.post('/declutter-suggestions', aiRateLimiter, async (req, res) => {
     const items = itemsResult.rows;
 
     if (items.length === 0) {
-      return res.json({ content: 'Great news! All your items have been worn recently.', parsed: { donate_candidates: [], keep_reasons: {}, estimated_resale_value: 0 } });
+      await aiRequest.commit();
+    return res.json({ content: 'Great news! All your items have been worn recently.', parsed: { donate_candidates: [], keep_reasons: {}, estimated_resale_value: 0 } });
     }
 
     const prompt = `You are a wardrobe declutter AI. Analyze these clothing items not worn in 90+ days.
@@ -179,17 +207,23 @@ ${items.map(i => `ID:${i.id} Name:${i.name} Category:${i.category} Brand:${i.bra
 
 Return JSON: {donate_candidates: [{item_id, reason, resale_potential}], keep_reasons: {item_id: reason}, estimated_resale_value}`;
 
-    const content = await callOpenRouter([{ role: 'user', content: prompt }]);
+    const content = await callOpenRouter([{ role: 'user', content: prompt }], 1500, aiRequest);
     const parsed = parseJSON(content) || {};
-    await saveAnalysis(req.user.id, 'declutter-suggestions', null, parsed);
+    await saveAnalysis(req.user.id, 'declutter-suggestions', null, parsed, aiRequest);
+    await aiRequest.commit();
     res.json({ content, parsed, itemCount: items.length });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    await aiRequest.rollback();
+    if (aiRequest.disconnected) return;
+    if (aiRequest.timedOut) return res.status(504).json({ error: 'AI request timed out. Please try again.' });
+    res.status(500).json({ error: err.message }); } finally { await aiRequest.dispose(); }
 });
 
 // POST /api/ai/cost-per-wear
 router.post('/cost-per-wear', aiRateLimiter, async (req, res) => {
+  const aiRequest = createNativeAIRequest(req, res, pool);
   try {
-    const itemsResult = await pool.query(
+    const itemsResult = await aiRequest.query(
       'SELECT id, name, category, brand, purchase_price, wear_count FROM wardrobe_items WHERE user_id = $1 AND is_donated = FALSE',
       [req.user.id]
     );
@@ -207,20 +241,26 @@ ${itemsWithCPW.map(i => `ID:${i.id} Name:${i.name} Category:${i.category} Price:
 
 Return JSON: {high_value_items: [], poor_value_items: [], recommendations: []}`;
 
-    const content = await callOpenRouter([{ role: 'user', content: prompt }]);
+    const content = await callOpenRouter([{ role: 'user', content: prompt }], 1500, aiRequest);
     const parsed = parseJSON(content) || {};
-    await saveAnalysis(req.user.id, 'cost-per-wear', null, parsed);
+    await saveAnalysis(req.user.id, 'cost-per-wear', null, parsed, aiRequest);
+    await aiRequest.commit();
     res.json({ content, parsed, items: itemsWithCPW });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    await aiRequest.rollback();
+    if (aiRequest.disconnected) return;
+    if (aiRequest.timedOut) return res.status(504).json({ error: 'AI request timed out. Please try again.' });
+    res.status(500).json({ error: err.message }); } finally { await aiRequest.dispose(); }
 });
 
 // POST /api/ai/seasonal-analysis
 router.post('/seasonal-analysis', aiRateLimiter, async (req, res) => {
+  const aiRequest = createNativeAIRequest(req, res, pool);
   try {
     const { target_season } = req.body;
     const season = target_season || 'Summer';
 
-    const itemsResult = await pool.query(
+    const itemsResult = await aiRequest.query(
       'SELECT id, name, category, color, material, season, formality, wear_count FROM wardrobe_items WHERE user_id = $1 AND is_donated = FALSE',
       [req.user.id]
     );
@@ -248,19 +288,25 @@ Return JSON: {
   capsule_wardrobe_suggestion: [{category, description, why}]
 }`;
 
-    const content = await callOpenRouter([{ role: 'user', content: prompt }]);
+    const content = await callOpenRouter([{ role: 'user', content: prompt }], 1500, aiRequest);
     const parsed = parseJSON(content) || {};
-    await saveAnalysis(req.user.id, 'seasonal-analysis', null, parsed);
+    await saveAnalysis(req.user.id, 'seasonal-analysis', null, parsed, aiRequest);
+    await aiRequest.commit();
     res.json({ content, parsed, season, seasonItemCount: seasonItems.length, totalItems: items.length });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    await aiRequest.rollback();
+    if (aiRequest.disconnected) return;
+    if (aiRequest.timedOut) return res.status(504).json({ error: 'AI request timed out. Please try again.' });
+    res.status(500).json({ error: err.message }); } finally { await aiRequest.dispose(); }
 });
 
 // POST /api/ai/style-profile
 router.post('/style-profile', aiRateLimiter, async (req, res) => {
+  const aiRequest = createNativeAIRequest(req, res, pool);
   try {
     const { body_type, skin_tone, lifestyle, preferences } = req.body;
 
-    const itemsResult = await pool.query(
+    const itemsResult = await aiRequest.query(
       'SELECT category, color, material, formality, brand, wear_count FROM wardrobe_items WHERE user_id = $1 AND is_donated = FALSE ORDER BY wear_count DESC LIMIT 50',
       [req.user.id]
     );
@@ -300,17 +346,23 @@ Return JSON: {
   shopping_priorities: [{item, priority: "high/medium/low", reason}]
 }`;
 
-    const content = await callOpenRouter([{ role: 'user', content: prompt }]);
+    const content = await callOpenRouter([{ role: 'user', content: prompt }], 1500, aiRequest);
     const parsed = parseJSON(content) || {};
-    await saveAnalysis(req.user.id, 'style-profile', null, parsed);
+    await saveAnalysis(req.user.id, 'style-profile', null, parsed, aiRequest);
+    await aiRequest.commit();
     res.json({ content, parsed });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    await aiRequest.rollback();
+    if (aiRequest.disconnected) return;
+    if (aiRequest.timedOut) return res.status(504).json({ error: 'AI request timed out. Please try again.' });
+    res.status(500).json({ error: err.message }); } finally { await aiRequest.dispose(); }
 });
 
 // POST /api/ai/wear-pattern-analysis — analyze wear logs to identify favorite pieces, unused items
 router.post('/wear-pattern-analysis', aiRateLimiter, async (req, res) => {
+  const aiRequest = createNativeAIRequest(req, res, pool);
   try {
-    const itemsResult = await pool.query(
+    const itemsResult = await aiRequest.query(
       `SELECT id, name, category, color, brand, purchase_price, wear_count, last_worn, created_at
        FROM wardrobe_items
        WHERE user_id = $1 AND is_donated = FALSE
@@ -320,8 +372,8 @@ router.post('/wear-pattern-analysis', aiRateLimiter, async (req, res) => {
     );
     const items = itemsResult.rows;
 
-    const logsResult = await pool.query(
-      `SELECT item_id, COUNT(*) AS log_count, MAX(worn_on) AS last_log
+    const logsResult = await aiRequest.query(
+      `SELECT item_id, COUNT(*) AS log_count, MAX(worn_date) AS last_log
        FROM wear_logs
        WHERE user_id = $1
        GROUP BY item_id
@@ -346,18 +398,24 @@ Return JSON: {
   recommendations: [string]
 }`;
 
-    const content = await callOpenRouter([{ role: 'user', content: prompt }]);
+    const content = await callOpenRouter([{ role: 'user', content: prompt }], 1500, aiRequest);
     const parsed = parseJSON(content) || {};
-    await saveAnalysis(req.user.id, 'wear-pattern-analysis', null, parsed);
+    await saveAnalysis(req.user.id, 'wear-pattern-analysis', null, parsed, aiRequest);
+    await aiRequest.commit();
     res.json({ content, parsed, itemCount: items.length });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    await aiRequest.rollback();
+    if (aiRequest.disconnected) return;
+    if (aiRequest.timedOut) return res.status(504).json({ error: 'AI request timed out. Please try again.' });
+    res.status(500).json({ error: err.message }); } finally { await aiRequest.dispose(); }
 });
 
 // POST /api/ai/weather-pack — weather-aware packing recommendations
 router.post('/weather-pack', aiRateLimiter, async (req, res) => {
+  const aiRequest = createNativeAIRequest(req, res, pool);
   try {
     const { destination, dates, weather_forecast, occasions } = req.body;
-    const itemsResult = await pool.query(
+    const itemsResult = await aiRequest.query(
       'SELECT id, name, category, color, material, formality, season FROM wardrobe_items WHERE user_id = $1 AND is_donated = FALSE LIMIT 100',
       [req.user.id]
     );
@@ -382,11 +440,16 @@ Return JSON: {
   gaps: [{item_type, reason}]
 }`;
 
-    const content = await callOpenRouter([{ role: 'user', content: prompt }]);
+    const content = await callOpenRouter([{ role: 'user', content: prompt }], 1500, aiRequest);
     const parsed = parseJSON(content) || {};
-    await saveAnalysis(req.user.id, 'weather-pack', null, parsed);
+    await saveAnalysis(req.user.id, 'weather-pack', null, parsed, aiRequest);
+    await aiRequest.commit();
     res.json({ content, parsed });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    await aiRequest.rollback();
+    if (aiRequest.disconnected) return;
+    if (aiRequest.timedOut) return res.status(504).json({ error: 'AI request timed out. Please try again.' });
+    res.status(500).json({ error: err.message }); } finally { await aiRequest.dispose(); }
 });
 
 // GET /api/ai/history — paginated ai_analyses

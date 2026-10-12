@@ -1,6 +1,8 @@
+import useNativeAIRequest from '../components/useNativeAIRequest';
+import NativeAIControls from '../components/NativeAIControls';
+import ReadableAIReport from "./AIResultView";
 import React, { useState } from 'react';
 import api from '../services/api';
-import Toast from '../components/Toast';
 
 const TABS = [
   { id: 'wear', label: 'Wear Pattern Analysis' },
@@ -9,10 +11,10 @@ const TABS = [
 
 function AIInsightsPage() {
   const [activeTab, setActiveTab] = useState('wear');
-  const [toast, setToast] = useState(null);
 
-  const [wearLoading, setWearLoading] = useState(false);
-  const [wearResult, setWearResult] = useState(null);
+
+  const wearRequest = useNativeAIRequest(); const { loading: wearLoading, result: wearResult, setResult: setWearResult } = wearRequest;
+
 
   const [weatherForm, setWeatherForm] = useState({
     destination: '',
@@ -21,55 +23,19 @@ function AIInsightsPage() {
     forecast: '',
     occasions: '',
   });
-  const [weatherLoading, setWeatherLoading] = useState(false);
-  const [weatherResult, setWeatherResult] = useState(null);
+  const weatherRequest = useNativeAIRequest(); const { loading: weatherLoading, result: weatherResult, setResult: setWeatherResult } = weatherRequest;
 
-  const handleWear = async () => {
-    setWearLoading(true);
-    setWearResult(null);
-    try {
-      const r = await api.post('/ai/wear-pattern-analysis', {});
-      setWearResult(r.data);
-    } catch (err) {
-      setToast({ type: 'error', msg: err.response?.data?.error || 'Error analyzing wear patterns' });
-    }
-    setWearLoading(false);
-  };
 
-  const handleWeather = async (e) => {
-    e.preventDefault();
-    setWeatherLoading(true);
-    setWeatherResult(null);
-    try {
-      const payload = {
-        destination: weatherForm.destination,
-        start_date: weatherForm.start_date,
-        end_date: weatherForm.end_date,
-        forecast: weatherForm.forecast,
-        occasions: weatherForm.occasions
-          ? weatherForm.occasions.split(',').map(s => s.trim()).filter(Boolean)
-          : [],
-      };
-      const r = await api.post('/ai/weather-pack', payload);
-      setWeatherResult(r.data);
-    } catch (err) {
-      setToast({ type: 'error', msg: err.response?.data?.error || 'Error generating weather pack' });
-    }
-    setWeatherLoading(false);
-  };
+  const [wearForm,setWearForm] = useState({ window_days: 90 });
+  const handleWear = async (event) => { event?.preventDefault(); await wearRequest.run(async options => (await api.post('/ai/wear-pattern-analysis',{ window_days: Number(wearForm.window_days) || 90 },options)).data); };
 
-  const renderAIText = (text) => {
-    if (!text) return null;
-    return (
-      <div style={{ background: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0', padding: 16, whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.7, color: '#374151', marginTop: 16 }}>
-        {text}
-      </div>
-    );
-  };
+  const handleWeather = async event => { event.preventDefault(); await weatherRequest.run(async options => (await api.post('/ai/weather-pack',{ ...weatherForm, occasions: weatherForm.occasions.split(',').map(value=>value.trim()).filter(Boolean) },options)).data); };
 
+  const renderAIText = text => text ? <ReadableAIReport result={text} /> : null;
+
+  const completePresets = ['City business trip','Cool-weather walking','Warm coastal break'].map((label,index) => ({ label, values: { window_days: [30,90,180][index], destination: ['Chicago','Edinburgh','Lisbon'][index], start_date: '2026-11-08', end_date: ['2026-11-11','2026-11-14','2026-11-18'][index], forecast: ['Example forecast: 5–12 C, rain possible; verify before travel.','Example forecast: 3–9 C, wind and showers; verify before travel.','Example forecast: 16–22 C, mild evenings; verify before travel.'][index], occasions: ['Client meetings, dinner','Walking tour, casual dinner','Beach walk, restaurant, museum'][index] } }));
   return (
     <div>
-      <Toast toast={toast} onClose={() => setToast(null)} />
       <div className="page-header">
         <div>
           <h1>AI Insights</h1>
@@ -81,7 +47,7 @@ function AIInsightsPage() {
         {TABS.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => { wearRequest.cancel(); weatherRequest.cancel(); setActiveTab(tab.id); }}
             style={{
               padding: '8px 16px', borderRadius: 8, border: '1px solid', cursor: 'pointer', fontSize: 13, fontWeight: 600,
               background: activeTab === tab.id ? '#7c3aed' : '#fff',
@@ -94,14 +60,16 @@ function AIInsightsPage() {
         ))}
       </div>
 
+      <NativeAIControls request={activeTab === 'wear' ? wearRequest : weatherRequest} presets={completePresets} onFill={values => { if (activeTab === 'wear') setWearForm({ window_days: values.window_days }); else setWeatherForm({ destination: values.destination, start_date: values.start_date, end_date: values.end_date, forecast: values.forecast, occasions: values.occasions }); }} />
       {activeTab === 'wear' && (
         <div className="card">
           <div className="card-header"><h2>Wear Pattern Analysis</h2></div>
           <div className="card-body">
             <p style={{ color: '#6b7280', marginBottom: 16 }}>Identify favorite pieces and unused items based on your wear logs.</p>
+            <label>Lookback window (days)<input type="number" min="7" max="365" value={wearForm.window_days} disabled={wearLoading} onChange={event=>setWearForm({window_days:event.target.value})} /></label>
             {!wearResult && (
               <button className="btn btn-primary" onClick={handleWear} disabled={wearLoading}>
-                {wearLoading ? 'Analyzing...' : 'Analyze Wear Patterns'}
+                {wearLoading ? 'Analyzing...' : 'Generate with OpenRouter'}
               </button>
             )}
             {wearLoading && <div className="ai-loading"><div className="spinner"></div><p>Analyzing wear patterns...</p></div>}
@@ -140,10 +108,10 @@ function AIInsightsPage() {
                 {wearResult.parsed?.category_balance && (
                   <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, padding: 12, marginBottom: 12 }}>
                     <h4 style={{ marginBottom: 6 }}>Category Balance</h4>
-                    <pre style={{ fontSize: 12, margin: 0, whiteSpace: 'pre-wrap' }}>{JSON.stringify(wearResult.parsed.category_balance, null, 2)}</pre>
+                    <ReadableAIReport result={wearResult.parsed.category_balance} />
                   </div>
                 )}
-                {renderAIText(wearResult.content)}
+                <ReadableAIReport result={wearResult} title="Wardrobe analysis report" />
                 <button className="btn btn-secondary btn-sm" onClick={() => setWearResult(null)} style={{ marginTop: 12 }}>Re-analyze</button>
               </div>
             )}
@@ -180,7 +148,7 @@ function AIInsightsPage() {
                 <input type="text" value={weatherForm.occasions} onChange={e => setWeatherForm({ ...weatherForm, occasions: e.target.value })} placeholder="business meeting, dinner, sightseeing" />
               </div>
               <button type="submit" className="btn btn-primary" disabled={weatherLoading}>
-                {weatherLoading ? 'Building...' : 'Build Weather Pack'}
+                {weatherLoading ? 'Building...' : 'Generate with OpenRouter'}
               </button>
             </form>
             {weatherLoading && <div className="ai-loading"><div className="spinner"></div><p>Building weather pack...</p></div>}
@@ -191,7 +159,7 @@ function AIInsightsPage() {
                     <h4 style={{ marginBottom: 8 }}>Layering Strategy</h4>
                     {weatherResult.parsed.layering_strategy.map((s, i) => (
                       <div key={i} style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, padding: '8px 12px', marginBottom: 6, fontSize: 13 }}>
-                        {typeof s === 'string' ? s : JSON.stringify(s)}
+                        {typeof s === 'string' ? s : <ReadableAIReport result={s} />}
                       </div>
                     ))}
                   </div>
@@ -201,7 +169,7 @@ function AIInsightsPage() {
                     <h4 style={{ marginBottom: 8 }}>Weather Risks</h4>
                     {weatherResult.parsed.weather_risks.map((r, i) => (
                       <div key={i} style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 12px', marginBottom: 6, fontSize: 13 }}>
-                        {typeof r === 'string' ? r : JSON.stringify(r)}
+                        {typeof r === 'string' ? r : <ReadableAIReport result={r} />}
                       </div>
                     ))}
                   </div>
@@ -211,12 +179,12 @@ function AIInsightsPage() {
                     <h4 style={{ marginBottom: 8 }}>Gaps</h4>
                     {weatherResult.parsed.gaps.map((g, i) => (
                       <div key={i} style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '8px 12px', marginBottom: 6, fontSize: 13 }}>
-                        {typeof g === 'string' ? g : JSON.stringify(g)}
+                        {typeof g === 'string' ? g : <ReadableAIReport result={g} />}
                       </div>
                     ))}
                   </div>
                 )}
-                {renderAIText(weatherResult.content)}
+                <ReadableAIReport result={weatherResult} title="Wardrobe analysis report" />
                 <button className="btn btn-secondary btn-sm" onClick={() => setWeatherResult(null)} style={{ marginTop: 12 }}>Reset</button>
               </div>
             )}

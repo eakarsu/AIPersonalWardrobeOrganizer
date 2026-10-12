@@ -1,6 +1,8 @@
+import useNativeAIRequest from '../components/useNativeAIRequest';
+import NativeAIControls from '../components/NativeAIControls';
+import ReadableAIReport from "./AIResultView";
 import React, { useState } from 'react';
 import api from '../services/api';
-import Toast from '../components/Toast';
 
 const TABS = [
   { id: 'wear-pattern', label: 'Wear Pattern Analysis' },
@@ -9,16 +11,16 @@ const TABS = [
 
 function WardrobeAIAdvancedPage() {
   const [activeTab, setActiveTab] = useState('wear-pattern');
-  const [toast, setToast] = useState(null);
+
 
   // Wear Pattern Analysis
-  const [wpLoading, setWpLoading] = useState(false);
-  const [wpResult, setWpResult] = useState(null);
+  const wearRequest = useNativeAIRequest(); const { loading: wpLoading, result: wpResult, setResult: setWpResult } = wearRequest;
+
   const [wpForm, setWpForm] = useState({ window_days: 90 });
 
   // Weather Pack
-  const [wpkLoading, setWpkLoading] = useState(false);
-  const [wpkResult, setWpkResult] = useState(null);
+  const weatherRequest = useNativeAIRequest(); const { loading: wpkLoading, result: wpkResult, setResult: setWpkResult } = weatherRequest;
+
   const [wpkForm, setWpkForm] = useState({
     destination: '',
     start_date: '',
@@ -27,88 +29,19 @@ function WardrobeAIAdvancedPage() {
     occasions: '',
   });
 
-  const handleWearPattern = async (e) => {
-    e.preventDefault();
-    setWpLoading(true);
-    setWpResult(null);
-    try {
-      const r = await api.post('/ai/wear-pattern-analysis', {
-        window_days: Number(wpForm.window_days) || 90,
-      });
-      setWpResult(r.data);
-    } catch (err) {
-      setToast({ type: 'error', msg: err.response?.data?.error || 'Error analyzing wear patterns' });
-    }
-    setWpLoading(false);
-  };
+  const handleWearPattern = async (event) => { event?.preventDefault(); await wearRequest.run(async options => (await api.post('/ai/wear-pattern-analysis',{ window_days: Number(wpForm.window_days) || 90 },options)).data); };
 
-  const handleWeatherPack = async (e) => {
-    e.preventDefault();
-    setWpkLoading(true);
-    setWpkResult(null);
-    try {
-      const occasions = wpkForm.occasions
-        ? wpkForm.occasions.split(',').map((s) => s.trim()).filter(Boolean)
-        : [];
-      const payload = {
-        destination: wpkForm.destination,
-        start_date: wpkForm.start_date,
-        end_date: wpkForm.end_date,
-        forecast: wpkForm.forecast,
-        occasions,
-      };
-      const r = await api.post('/ai/weather-pack', payload);
-      setWpkResult(r.data);
-    } catch (err) {
-      setToast({ type: 'error', msg: err.response?.data?.error || 'Error generating packing strategy' });
-    }
-    setWpkLoading(false);
-  };
+  const handleWeatherPack = async event => { event.preventDefault(); await weatherRequest.run(async options => (await api.post('/ai/weather-pack',{ ...wpkForm, occasions: wpkForm.occasions.split(',').map(value=>value.trim()).filter(Boolean) },options)).data); };
 
   const renderJSON = (obj) => (
-    <pre
-      style={{
-        fontSize: 11,
-        color: '#374151',
-        whiteSpace: 'pre-wrap',
-        wordBreak: 'break-word',
-        background: '#f9fafb',
-        border: '1px solid #e5e7eb',
-        padding: 10,
-        borderRadius: 8,
-        marginTop: 12,
-        maxHeight: 360,
-        overflow: 'auto',
-      }}
-    >
-      {typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2)}
-    </pre>
+    <ReadableAIReport result={obj} />
   );
 
-  const renderAIText = (text) => {
-    if (!text) return null;
-    return (
-      <div
-        style={{
-          background: '#f8fafc',
-          borderRadius: 10,
-          border: '1px solid #e2e8f0',
-          padding: 16,
-          whiteSpace: 'pre-wrap',
-          fontSize: 14,
-          lineHeight: 1.7,
-          color: '#374151',
-          marginTop: 16,
-        }}
-      >
-        {text}
-      </div>
-    );
-  };
+  const renderAIText = text => text ? <ReadableAIReport result={text} /> : null;
 
+  const completePresets = ['City business trip','Cool-weather walking','Warm coastal break'].map((label,index) => ({ label, values: { window_days: [30,90,180][index], destination: ['Chicago','Edinburgh','Lisbon'][index], start_date: '2026-11-08', end_date: ['2026-11-11','2026-11-14','2026-11-18'][index], forecast: ['Example forecast: 5–12 C, rain possible; verify before travel.','Example forecast: 3–9 C, wind and showers; verify before travel.','Example forecast: 16–22 C, mild evenings; verify before travel.'][index], occasions: ['Client meetings, dinner','Walking tour, casual dinner','Beach walk, restaurant, museum'][index] } }));
   return (
     <div>
-      <Toast toast={toast} onClose={() => setToast(null)} />
       <div className="page-header">
         <div>
           <h1>AI Insights+</h1>
@@ -120,7 +53,7 @@ function WardrobeAIAdvancedPage() {
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => { wearRequest.cancel(); weatherRequest.cancel(); setActiveTab(tab.id); }}
             style={{
               padding: '8px 16px',
               borderRadius: 8,
@@ -138,6 +71,7 @@ function WardrobeAIAdvancedPage() {
         ))}
       </div>
 
+      <NativeAIControls request={activeTab === 'wear-pattern' ? wearRequest : weatherRequest} presets={completePresets} onFill={values => { if (activeTab === 'wear-pattern') setWpForm({ window_days: values.window_days }); else setWpkForm({ destination: values.destination, start_date: values.start_date, end_date: values.end_date, forecast: values.forecast, occasions: values.occasions }); }} />
       {activeTab === 'wear-pattern' && (
         <div className="card">
           <div className="card-header">
@@ -162,7 +96,7 @@ function WardrobeAIAdvancedPage() {
                 />
               </div>
               <button type="submit" className="btn btn-primary" disabled={wpLoading}>
-                {wpLoading ? 'Analyzing...' : 'Analyze Patterns'}
+                {wpLoading ? 'Analyzing...' : 'Generate with OpenRouter'}
               </button>
             </form>
             {wpLoading && (
@@ -210,7 +144,7 @@ function WardrobeAIAdvancedPage() {
                           marginBottom: 6,
                         }}
                       >
-                        {typeof f === 'string' ? f : JSON.stringify(f)}
+                        {typeof f === 'string' ? f : <ReadableAIReport result={f} />}
                       </div>
                     ))}
                   </div>
@@ -229,7 +163,7 @@ function WardrobeAIAdvancedPage() {
                           marginBottom: 6,
                         }}
                       >
-                        {typeof f === 'string' ? f : JSON.stringify(f)}
+                        {typeof f === 'string' ? f : <ReadableAIReport result={f} />}
                       </div>
                     ))}
                   </div>
@@ -240,9 +174,9 @@ function WardrobeAIAdvancedPage() {
                     {renderJSON(wpResult.parsed.category_balance)}
                   </div>
                 )}
-                {renderAIText(wpResult.content)}
+                <ReadableAIReport result={wpResult} title="Wardrobe analysis report" />
                 <details style={{ marginTop: 12 }}>
-                  <summary style={{ cursor: 'pointer', color: '#6b7280', fontSize: 12 }}>Raw response</summary>
+                  <summary style={{ cursor: 'pointer', color: '#6b7280', fontSize: 12 }}>Complete report</summary>
                   {renderJSON(wpResult)}
                 </details>
                 <button
@@ -321,7 +255,7 @@ function WardrobeAIAdvancedPage() {
                 </div>
               </div>
               <button type="submit" className="btn btn-primary" disabled={wpkLoading} style={{ marginTop: 8 }}>
-                {wpkLoading ? 'Building Pack...' : 'Generate Packing Strategy'}
+                {wpkLoading ? 'Building Pack...' : 'Generate with OpenRouter'}
               </button>
             </form>
             {wpkLoading && (
@@ -365,7 +299,7 @@ function WardrobeAIAdvancedPage() {
                           fontSize: 13,
                         }}
                       >
-                        {typeof layer === 'string' ? layer : JSON.stringify(layer)}
+                        {typeof layer === 'string' ? layer : <ReadableAIReport result={layer} />}
                       </div>
                     ))}
                   </div>
@@ -386,7 +320,7 @@ function WardrobeAIAdvancedPage() {
                           color: '#78350f',
                         }}
                       >
-                        {typeof risk === 'string' ? risk : JSON.stringify(risk)}
+                        {typeof risk === 'string' ? risk : <ReadableAIReport result={risk} />}
                       </div>
                     ))}
                   </div>
@@ -407,14 +341,14 @@ function WardrobeAIAdvancedPage() {
                           color: '#991b1b',
                         }}
                       >
-                        {typeof gap === 'string' ? gap : JSON.stringify(gap)}
+                        {typeof gap === 'string' ? gap : <ReadableAIReport result={gap} />}
                       </div>
                     ))}
                   </div>
                 )}
-                {renderAIText(wpkResult.content)}
+                <ReadableAIReport result={wpkResult} title="Wardrobe analysis report" />
                 <details style={{ marginTop: 12 }}>
-                  <summary style={{ cursor: 'pointer', color: '#6b7280', fontSize: 12 }}>Raw response</summary>
+                  <summary style={{ cursor: 'pointer', color: '#6b7280', fontSize: 12 }}>Complete report</summary>
                   {renderJSON(wpkResult)}
                 </details>
                 <button
