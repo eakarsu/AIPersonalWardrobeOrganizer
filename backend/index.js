@@ -26,6 +26,7 @@ app.use('/api/outfits', require('./routes/outfits'));
 app.use('/api/wear-logs', require('./routes/wear-logs'));
 app.use('/api/packing-lists', require('./routes/packing-lists'));
 app.use('/api/ai', require('./routes/ai'));
+app.use('/api/tasks', require('./routes/fpTasks'));
 // Apply pass 5 — backlog extensions (fit, sharing, shopping, weather, orchestration, audit, capsules, rotation)
 app.use('/api/wardrobe-ext', require('./routes/extensions'));
 const auth = require('./middleware/auth');

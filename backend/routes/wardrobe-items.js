@@ -20,6 +20,7 @@ router.get('/', async (req, res) => {
     const limit = parseInt(req.query.limit) || 50;
     const offset = (page - 1) * limit;
     const { category, season, formality } = req.query;
+    const q = req.query.q || req.query.search;
 
     let query = 'SELECT * FROM wardrobe_items WHERE user_id = $1 AND is_donated = FALSE';
     const params = [req.user.id];
@@ -27,6 +28,7 @@ router.get('/', async (req, res) => {
 
     if (category) { query += ` AND category = $${idx++}`; params.push(category); }
     if (formality) { query += ` AND formality = $${idx++}`; params.push(formality); }
+    if (q) { query += ` AND (name ILIKE $${idx} OR category ILIKE $${idx} OR color ILIKE $${idx} OR brand ILIKE $${idx})`; params.push(`%${q}%`); idx++; }
 
     query += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
     params.push(limit, offset);
